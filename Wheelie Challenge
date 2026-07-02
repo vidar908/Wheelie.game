@@ -6,7 +6,7 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Wheelie Challenge</title>
 
@@ -18,7 +18,7 @@ margin:0;
 
 overflow:hidden;
 
-background:linear-gradient(#7dd3fc,#4ade80);
+background:linear-gradient(#6ec6ff,#7ed957);
 
 font-family:Arial,sans-serif;
 
@@ -46,7 +46,7 @@ position:absolute;
 
 left:60px;
 
-bottom:90px;
+bottom:40px;
 
 font-size:90px;
 
@@ -68,43 +68,13 @@ background:#444;
 
 }
 
-#button{
-
-position:absolute;
-
-bottom:15px;
-
-right:15px;
-
-width:120px;
-
-height:120px;
-
-background:#e53935;
-
-color:white;
-
-border-radius:60px;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-font-size:28px;
-
-user-select:none;
-
-}
-
 .obstacle{
 
 position:absolute;
 
-bottom:90px;
+bottom:40px;
 
-font-size:55px;
+font-size:60px;
 
 }
 
@@ -114,104 +84,114 @@ font-size:55px;
 
 <body>
 
-<div id="score">Poeng: 0</div>
+<div id="score">⭐ Poeng: 0</div>
 
 <div id="bike">🏍️</div>
 
 <div id="ground"></div>
 
-<div id="button">GASS</div>
-
 <script>
 
 let bike=document.getElementById("bike");
 
-let score=document.getElementById("score");
-
-let gas=document.getElementById("button");
-
 let points=0;
 
-let jump=0;
+let jump=0function jumpBike(){
 
-let up=false;
+  if(jump>0) return;
 
-gas.ontouchstart=()=>up=true;
+  let up=setInterval(function(){
 
-gas.ontouchend=()=>up=false;
+    jump+=6;
 
-function game(){
+    bike.style.bottom=(40+jump)+"px";
 
-if(up){
+    bike.style.transform="rotate(-20deg)";
 
-jump+=3;
+    if(jump>=120){
 
-}else{
+      clearInterval(up);
 
-jump-=2;
+      let down=setInterval(function(){
 
-}
+        jump-=6;
 
-if(jump<0)jump=0;
+        bike.style.bottom=(40+jump)+"px";
 
-if(jump>140)jump=140;
+        if(jump<=0){
 
-bike.style.bottom=(90+jump)+"px";
+          jump=0;
 
-bike.style.transform="rotate("+(-jump/5)+"deg)";
+          bike.style.bottom="40px";
 
-points++;
+          bike.style.transform="rotate(0deg)";
 
-score.innerHTML="Poeng: "+points;
+          clearInterval(down);
 
-requestAnimationFrame(game);
+        }
 
-}
+      },20);
 
-game()function obstacle(){
+    }
 
-let rock=document.createElement("div");
-
-rock.className="obstacle";
-
-rock.innerHTML="🪨";
-
-rock.style.left=window.innerWidth+"px";
-
-document.body.appendChild(rock);
-
-let x=window.innerWidth;
-
-let move=setInterval(function(){
-
-x-=8;
-
-rock.style.left=x+"px";
-
-if(x<120 && x>40 && jump<40){
-
-clearInterval(move);
-
-alert("💥 Game Over!\nPoeng: "+points);
-
-location.reload();
+  },20);
 
 }
 
-if(x<-60){
+document.addEventListener("click",jumpBike);
 
-clearInterval(move);
+document.addEventListener("touchstart",jumpBike);
 
-rock.remove();
+setInterval(function(){
+
+  points++;
+
+  document.getElementById("score").innerHTML="⭐ Poeng: "+points;
+
+},100function obstacle(){
+
+  let rock=document.createElement("div");
+
+  rock.className="obstacle";
+
+  rock.innerHTML="🪨";
+
+  rock.style.left=window.innerWidth+"px";
+
+  document.body.appendChild(rock);
+
+  let x=window.innerWidth;
+
+  let move=setInterval(function(){
+
+    x-=8;
+
+    rock.style.left=x+"px";
+
+    if(x<120 && x>40 && jump<40){
+
+      clearInterval(move);
+
+      alert("💥 Game Over!\nPoeng: "+points);
+
+      location.reload();
+
+    }
+
+    if(x<-60){
+
+      clearInterval(move);
+
+      rock.remove();
+
+    }
+
+  },20);
 
 }
 
-},20);
+setInterval(obstacle,2000)</script>
 
-}
+</body>
 
-setInterval(obstacle,2000);
-
-</script>
-
-</body
+</html
