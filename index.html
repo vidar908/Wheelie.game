@@ -1,1 +1,143 @@
+<!DOCTYPE html>
+<html lang="no">
 
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wheelie Challenge</title>
+  <style>
+    body{
+      margin:0;
+      overflow:hidden;
+      background:linear-gradient(#6ec6ff,#7ed957);
+      font-family:Arial,sans-serif;
+    }
+
+    #score{
+      position:absolute;
+      top:15px;
+      left:15px;
+      font-size:28px;
+      font-weight:bold;
+      color:white;
+    }
+
+    #bike{
+      position:absolute;
+      left:60px;
+      bottom:40px;
+      font-size:90px;
+      transition:0.08s;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    #ground{
+      position:absolute;
+      bottom:0;
+      width:100%;
+      height:90px;
+      background:#444;
+    }
+
+    .obstacle{
+      position:absolute;
+      bottom:40px;
+      font-size:60px;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="score">⭐ Poeng: 0</div>
+  <div id="bike">🏍️</div>
+  <div id="ground"></div>
+
+  <script>
+    // Simple Wheelie Challenge game
+    const bike = document.getElementById('bike');
+    let points = 0;
+    let jump = 0; // current jump offset
+    let isJumping = false;
+
+    function jumpBike(){
+      if(isJumping) return;
+      isJumping = true;
+
+      const up = setInterval(function(){
+        jump += 6;
+        bike.style.bottom = (40 + jump) + 'px';
+        bike.style.transform = 'rotate(-20deg)';
+
+        if(jump >= 120){
+          clearInterval(up);
+          const down = setInterval(function(){
+            jump -= 6;
+            bike.style.bottom = (40 + jump) + 'px';
+
+            if(jump <= 0){
+              jump = 0;
+              bike.style.bottom = '40px';
+              bike.style.transform = 'rotate(0deg)';
+              clearInterval(down);
+              isJumping = false;
+            }
+          }, 20);
+        }
+      }, 20);
+    }
+
+    // Input handlers
+    document.addEventListener('click', jumpBike);
+    document.addEventListener('touchstart', function(e){ e.preventDefault(); jumpBike(); }, {passive:false});
+    document.addEventListener('keydown', function(e){
+      if(e.code === 'Space' || e.key === ' '){
+        e.preventDefault();
+        jumpBike();
+      }
+    });
+
+    // Score increment
+    setInterval(function(){
+      points++;
+      document.getElementById('score').textContent = '⭐ Poeng: ' + points;
+    }, 100);
+
+    // Create obstacles
+    function obstacle(){
+      const rock = document.createElement('div');
+      rock.className = 'obstacle';
+      rock.innerHTML = '🪨';
+      rock.style.left = window.innerWidth + 'px';
+      document.body.appendChild(rock);
+
+      let x = window.innerWidth;
+      const move = setInterval(function(){
+        x -= 8;
+        rock.style.left = x + 'px';
+
+        // Collision detection: when rock is near bike's x and bike is low
+        if(x < 120 && x > 40 && jump < 40){
+          clearInterval(move);
+          alert('💥 Game Over!\nPoeng: ' + points);
+          location.reload();
+        }
+
+        if(x < -60){
+          clearInterval(move);
+          rock.remove();
+        }
+      }, 20);
+    }
+
+    // Spawn obstacles regularly
+    setInterval(obstacle, 2000);
+
+    // Accessibility: focus to capture spacebar on page load
+    window.addEventListener('load', function(){ document.body.tabIndex = -1; document.body.focus(); });
+  </script>
+</body>
+
+</html>
