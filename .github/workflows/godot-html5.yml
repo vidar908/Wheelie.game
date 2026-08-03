@@ -1,0 +1,64 @@
+name: Build and deploy Godot HTML5 (CLI)
+on:
+  push:
+    branches:
+      - feature/initial-prototype
+      - feature/full-game
+      - main
+  workflow_dispatch:
+
+jobs:
+  export-html5:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/godot
+          key: ${{ runner.os }}-godot-${{ hashFiles('**/project.godot') }}
+
+      - name: Download Godot 4.2.0
+        run: |
+          GODOT_VER=4.2.0
+          mkdir -p /tmp/godot
+          wget -q -O /tmp/godot/godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VER}/Godot_v${GODOT_VER}-linux.x86_64.zip
+          unzip -q /tmp/godot/godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot
+          /tmp/godot/Godot --version
+
+      - name: Install export templates
+        run: |
+          # download export templates for HTML5 (assumes matching Godot minor version)
+          TMP=/tmp/godot
+          wget -q -O $TMP/templates.tpz https://downloads.tuxfamily.org/godotengine/4.2.0/Godot_v4.2.0-export_templates.tpz
+          mkdir -p ~/.local/share/godot/templates
+          tar -xzf $TMP/templates.tpz -C ~/.local/share/godot/templates || true
+
+      - name: Export HTML5
+        run: |
+          /tmp/godot/Godot --no-window --export "HTML5" build/html5 || true
+
+      - name: Archive build
+        uses: actions/upload-artifact@v4
+        with:
+          name: html5-build
+          path: build/html5
+
+  deploy-pages:
+    needs: export-html5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: html5-build
+          path: build/html5
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.DEPLOY_KEY }}
+          publish_dir: ./build/html5
