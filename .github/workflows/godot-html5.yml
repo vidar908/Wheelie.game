@@ -1,0 +1,30 @@
+name: Build and deploy Godot HTML5
+
+on:
+  push:
+    branches:
+      - feature/initial-prototype
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build HTML5 export with Firebelley/godot-export-action
+        uses: firebelley/godot-export-action@v2
+        with:
+          project_path: '.'
+          export_presets_path: 'export_presets.cfg'
+          export_preset: 'HTML5'
+          godot_version: '4.2.4'
+          output_path: 'build/html5'
+
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: 'build/html5'
+          publish_branch: 'gh-pages'
