@@ -1,0 +1,9 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="GameOver" type="Control"]
+
+[node name="Label" type="Label" parent="."]
+text = "Game Over"
+
+[node name="Stats" type="Label" parent="."]
+text = "Total Time: --\nTotal Score: --\nWheelies: --\nJumps: --\nCoins: --"

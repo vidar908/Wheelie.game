@@ -1,0 +1,16 @@
+.import/
+.export/
+.export_presets.cfg
+*.import
+*.tmp
+*.log
+godot.project
+.project
+.idea/
+.vscode/
+.DS_Store
+bin/
+obj/
+*.exe
+*.apk
+res://.godot/

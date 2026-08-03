@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource path="res://scene/Player.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scripts/game_manager.gd" type="Script" id=2]
+
+[node name="Track" type="Node2D"]
+
+[node name="PlayerStart" type="Position2D" parent="."]
+position = Vector2(200, 500)
+
+[node name="Player" parent="." instance=ExtResource( 1 )]
+position = Vector2(200, 500)
+
+[node name="Coins" type="Node2D" parent="."]
+
+[node name="Finish" type="Area2D" parent="."]
+position = Vector2(1800, 520)
+
+[node name="Finish/CollisionShape2D" type="CollisionShape2D" parent="Finish"]
+shape = SubResource( 1 )
+
+[sub_resource id=1 type="RectangleShape2D"]
+extents = Vector2(100, 120)
