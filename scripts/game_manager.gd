@@ -15,13 +15,33 @@ onready var player = null
 
 func _ready():
     start_time = OS.get_unix_time()
-    # Try to find player automatically
-    player = get_tree().get_root().find_node("Player", true, false)
+    # Try to find player automatically (be tolerant of different node naming)
+    # Prefer to search within the current scene root (assumes GameManager is in the scene)
+    var root = get_tree().get_current_scene()
+    if root:
+        player = root.find_node("Player", true, false)
+        if player == null:
+            player = root.find_node("player", true, false)
+    # fallback: search the whole tree
+    if player == null:
+        player = get_tree().get_root().find_node("Player", true, false)
+        if player == null:
+            player = get_tree().get_root().find_node("player", true, false)
+
     if player:
-        player.connect("did_jump", Callable(self, "on_player_jump"))
-        player.connect("did_land", Callable(self, "on_player_land"))
-        player.connect("did_crash", Callable(self, "on_player_crash"))
-        player.connect("did_flip", Callable(self, "on_player_flip"))
+        # connect signals safely
+        if not player.is_connected("did_jump", Callable(self, "on_player_jump")):
+            player.connect("did_jump", Callable(self, "on_player_jump"))
+        if not player.is_connected("did_land", Callable(self, "on_player_land")):
+            player.connect("did_land", Callable(self, "on_player_land"))
+        if not player.is_connected("did_crash", Callable(self, "on_player_crash")):
+            player.connect("did_crash", Callable(self, "on_player_crash"))
+        if not player.is_connected("did_flip", Callable(self, "on_player_flip")):
+            player.connect("did_flip", Callable(self, "on_player_flip"))
+
+func _process(delta: float) -> void:
+    # keep wheelie scoring updated if player exposes is_wheelie
+    update_wheelie(delta)
 
 func on_player_jump(height):
     jumps += 1
@@ -50,8 +70,8 @@ func collect_coin():
 
 func update_wheelie(delta):
     # Called from Main loop to add wheelie points
-    if player and player.is_wheelie:
-        score += 100 * delta
+    if player and player.get("is_wheelie"):
+        score += int(100 * delta)
         wheelie_seconds += delta
 
 func game_over():

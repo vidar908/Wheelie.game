@@ -45,11 +45,12 @@ func _physics_process(delta: float) -> void:
         velocity.y += gravity * delta
 
     # move once, using CharacterBody2D helper
+    # CharacterBody2D.move_and_slide returns the new velocity — capture it
     velocity = move_and_slide(velocity, Vector2.UP)
 
     # detect transitions between air/ground
     if not was_on_floor and is_on_floor():
-        _on_landed(delta)
+        _on_landed()
     elif was_on_floor and not is_on_floor():
         _on_takeoff()
 
@@ -63,7 +64,7 @@ func _physics_process(delta: float) -> void:
         delta_rot = (delta_rot + 180.0) % 360.0 - 180.0
         airborne_rotation_accum += delta_rot
     else:
-        # ensure rotation stays within -inf..inf small
+        # keep accumulation bounded
         airborne_rotation_accum = clamp(airborne_rotation_accum, -10000, 10000)
 
     last_rotation_degrees = rotation_degrees
@@ -107,7 +108,7 @@ func _on_takeoff() -> void:
     # reset airborne rotation accumulator when leaving ground
     airborne_rotation_accum = 0.0
 
-func _on_landed(delta: float) -> void:
+func _on_landed() -> void:
     # landing_velocity (positive downwards)
     var landing_v = velocity.y
 
@@ -116,7 +117,6 @@ func _on_landed(delta: float) -> void:
 
     # Flip detection: if accumulated rotation while airborne meets requirement
     if abs(airborne_rotation_accum) >= flip_rotation_required:
-        # direction: positive accum => rotation to the right (clockwise) -> frontflip? interpret sign
         var dir = 1 if airborne_rotation_accum > 0 else -1
         emit_signal("did_flip", dir)
         # normalize rotation to upright on landing
@@ -139,7 +139,7 @@ func _update_wheelie(delta: float) -> void:
     if is_wheelie:
         wheelie_time += delta
     else:
-        # if wheelie just ended, emit a did_land-like hook by leaving it to GameManager to sample wheelie_time
+        # if wheelie just ended, leave it to GameManager to sample wheelie_time
         pass
 
 func reset_wheelie_time() -> void:
