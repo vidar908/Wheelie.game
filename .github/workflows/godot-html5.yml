@@ -1,0 +1,53 @@
+name: Build and report Godot HTML5 status
+
+on:
+  push:
+    paths:
+      - 'project.godot'
+      - 'export_presets.cfg'
+      - '.github/workflows/godot-html5.yml'
+      - '**/*.godot'
+  workflow_dispatch:
+
+jobs:
+  build-html5:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for Godot project and export presets
+        id: check
+        run: |
+          missing=0
+          if [ ! -f "project.godot" ]; then
+            echo "project_missing=true" >> "$GITHUB_OUTPUT"
+            missing=1
+          else
+            echo "project_missing=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ ! -f "export_presets.cfg" ]; then
+            echo "export_missing=true" >> "$GITHUB_OUTPUT"
+            missing=1
+          else
+            echo "export_missing=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "missing=$missing" >> "$GITHUB_OUTPUT"
+
+      - name: If missing, write status and skip build
+        if: steps.check.outputs.missing == '1'
+        run: |
+          echo "Skipping HTML5 build because required files are missing." > build_status.txt
+          echo "project_missing=${{ steps.check.outputs.project_missing }}" >> build_status.txt
+          echo "export_missing=${{ steps.check.outputs.export_missing }}" >> build_status.txt
+
+      - name: Prepare to build (placeholder)
+        if: steps.check.outputs.missing == '0'
+        run: |
+          echo "Project and export presets found. Insert Godot download, export templates install, and godot --export steps here." > build_status.txt
+
+      - name: Upload build status artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html5-build-status
+          path: build_status.txt
